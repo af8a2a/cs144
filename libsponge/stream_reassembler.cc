@@ -27,41 +27,46 @@ StreamReassembler::StreamReassembler(const size_t capacity)
 //! possibly out-of-order, from the logical stream, and assembles any newly
 //! contiguous substrings and writes them into the output stream in order.
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
-    if (index >= next_index_ + _output.remaining_capacity()) {
-        return;
-    }
-    // 设置eof标志
-    if (eof && index + data.size() <= next_index_ + _output.remaining_capacity()) {
-        is_eof_ = true;
-    }
-    // 如果所有数据都已经保存过了，那就跳过
-    if (index + data.size() > next_index_) {
-        // 将数据保存到datas_中，从index和next_index_中更大的一方开始，避免无用循环
-        for (size_t i = (index > next_index_ ? index : next_index_);
-             i < next_index_ + _output.remaining_capacity() && i < index + data.size();
-             i++) {
-            if (write_flag_.count(i) == 0) {
-                // 动态扩容
-                if (datas_.capacity() <= i) {
-                    datas_.reserve(i * 2);
-                }
-                datas_[i] = data[i - index];
-                write_flag_.insert(i);
-                unassembled_bytes_++;
-            }
-        }
-        // 将已经有序的数据发送到字节流中
-        while (write_flag_.count(next_index_) > 0) {
-            _output.write(datas_[next_index_]);
-            write_flag_.erase(next_index_);
-            next_index_++;
-            unassembled_bytes_--;
-        }
-    }
-    // 如果输入结束且所有数据都发送了，则结束字节流
-    if (is_eof_ && empty()) {
-        _output.end_input();
-    }
+       if (index >= next_index_ + _output.remaining_capacity()) {
+       return;
+   }
+   // 设置eof标志
+   if (eof && index + data.size() <= next_index_ + _output.remaining_capacity()) {
+       is_eof_ = true;
+   }
+   // 如果所有数据都已经保存过了，那就跳过
+   if (index + data.size() > next_index_) {
+       // 将数据保存到datas_中，从index和next_index_中更大的一方开始，避免无用循环
+       for (size_t i = (index > next_index_ ? index : next_index_);
+            i < next_index_ + _output.remaining_capacity() && i < index + data.size();
+            i++) {
+           if (!write_flag_[i - next_index_]) {
+               datas_[i - next_index_] = data[i - index];
+               write_flag_[i - next_index_] = true;
+               unassembled_bytes_++;
+           }
+       }
+       // 将已经有序的数据发送到字节流中
+       string out_str;
+       while (write_flag_.front()) {
+           out_str += datas_.front();
+           datas_.pop_front();
+           datas_.push_back('\0');
+           write_flag_.pop_front();
+           write_flag_.push_back(false);
+       }
+       size_t out_len = out_str.size();
+       if (out_len > 0) {
+           unassembled_bytes_ -= out_len;
+           next_index_ += out_len;
+           _output.write(out_str);
+       }
+   }
+   // 如果输入结束且所有数据都发送了，则结束字节流
+   if (is_eof_ && empty()) {
+       _output.end_input();
+   }
+
 }
 
 size_t StreamReassembler::unassembled_bytes() const { return unassembled_bytes_; }
