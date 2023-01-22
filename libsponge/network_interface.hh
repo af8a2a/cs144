@@ -5,6 +5,7 @@
 #include "tcp_over_ip.hh"
 #include "tun.hh"
 
+#include <list>
 #include <optional>
 #include <queue>
 
@@ -40,6 +41,15 @@ class NetworkInterface {
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
 
+    std::unordered_map<uint32_t, std::pair<EthernetAddress, size_t>> _arp_map{};
+    // 已发送, 未回应的部分
+    // ip -> time
+    std::unordered_map<uint32_t, size_t> waiting_msg{};
+    // 未发送部分, 没有对应以太网地址的部分
+    std::list<std::pair<Address, InternetDatagram>> cache{};
+    // 时间
+    size_t _time = 0;
+
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
     NetworkInterface(const EthernetAddress &ethernet_address, const Address &ip_address);
@@ -62,6 +72,9 @@ class NetworkInterface {
 
     //! \brief Called periodically when time elapses
     void tick(const size_t ms_since_last_tick);
+    bool equal(const EthernetAddress &d1, const EthernetAddress &d2);
+    // 发送广播
+    EthernetFrame broadcast_frame(uint32_t ip);
 };
 
 #endif  // SPONGE_LIBSPONGE_NETWORK_INTERFACE_HH
