@@ -91,7 +91,6 @@ class TCPSender {
 
     //! \brief Number of consecutive retransmissions that have occurred in a row
     unsigned int consecutive_retransmissions() const;
-
     //! \brief TCPSegments that the TCPSender has enqueued for transmission.
     //! \note These must be dequeued and sent by the TCPConnection,
     //! which will need to fill in the fields that are set by the TCPReceiver
