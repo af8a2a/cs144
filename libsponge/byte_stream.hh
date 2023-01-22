@@ -86,6 +86,16 @@ class ByteStream {
     //! Total number of bytes popped
     size_t bytes_read() const;
     //!@}
+    size_t write(const char data) {
+   // 获取数据大小
+   if (remaining_capacity() <= 0)
+       return 0;
+   // 保存数据并更新信息
+   buffer_.push_back(data);
+   write_count_++;
+   return 1;
+}
+
 };
 
 #endif  // SPONGE_LIBSPONGE_BYTE_STREAM_HH
