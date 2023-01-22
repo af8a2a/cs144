@@ -11,6 +11,14 @@
 //! immediately (from the `recv_frame` method), it stores them for
 //! later retrieval. Otherwise, behaves identically to the underlying
 //! implementation of NetworkInterface.
+class ForwardTableEntry {
+  public:
+    uint32_t route_prefix = 0;
+    uint8_t prefix_length = 0;
+    std::optional<Address> next_hop = {};
+    size_t interface_num = 0;
+};
+
 class AsyncNetworkInterface : public NetworkInterface {
     std::queue<InternetDatagram> _datagrams_out{};
 
@@ -43,6 +51,7 @@ class AsyncNetworkInterface : public NetworkInterface {
 class Router {
     //! The router's collection of network interfaces
     std::vector<AsyncNetworkInterface> _interfaces{};
+    std::vector<ForwardTableEntry> _forward_table{};
 
     //! Send a single datagram from the appropriate outbound interface to the next hop,
     //! as specified by the route with the longest prefix_length that matches the
@@ -69,6 +78,7 @@ class Router {
 
     //! Route packets between the interfaces
     void route();
+    uint32_t get_mask(uint8_t prefix_length);
 };
 
 #endif  // SPONGE_LIBSPONGE_ROUTER_HH
