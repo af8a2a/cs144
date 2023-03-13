@@ -14,7 +14,7 @@
 // You will need to add private members to the class declaration in `network_interface.hh`
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&... /* unused */) {}
+void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
@@ -83,13 +83,11 @@ void NetworkInterface::send_datagram(const InternetDatagram &dgram, const Addres
         frame.payload() = dgram.serialize();
         _frames_out.push(frame);
     }
-
-    
 }
 
 //! \param[in] frame the incoming Ethernet frame
 optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &frame) {
-        EthernetHeader header = frame.header();
+    EthernetHeader header = frame.header();
     // 只接受以太网目的地是广播地址或存储在以太网地址成员变量`_ethernet_address`中的以太网地址
     if (!equal(header.dst, ETHERNET_BROADCAST) && !equal(header.dst, _ethernet_address)) {
         return {};
@@ -113,7 +111,8 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
             EthernetAddress eth_addr = arp_msg.sender_ethernet_address;
             uint32_t ip_addr = arp_msg.sender_ip_address;
             // 此外，如果是ARP请求请求我们的IP地址，请发送适当的ARP回复。
-            if ((arp_msg.opcode == ARPMessage::OPCODE_REQUEST) && (arp_msg.target_ip_address == _ip_address.ipv4_numeric())) {
+            if ((arp_msg.opcode == ARPMessage::OPCODE_REQUEST) &&
+                (arp_msg.target_ip_address == _ip_address.ipv4_numeric())) {
                 EthernetHeader header_send;
                 header_send.type = header_send.TYPE_ARP;
                 header_send.dst = arp_msg.sender_ethernet_address;
@@ -153,12 +152,11 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
         }
         return {};
     }
-
 }
 
 //! \param[in] ms_since_last_tick the number of milliseconds since the last call to this method
-void NetworkInterface::tick(const size_t ms_since_last_tick) { 
-        _time += ms_since_last_tick;
+void NetworkInterface::tick(const size_t ms_since_last_tick) {
+    _time += ms_since_last_tick;
     // 更新映射表
     for (auto it = _arp_map.begin(); it != _arp_map.end();) {
         // 超过30秒则删除
@@ -180,5 +178,4 @@ void NetworkInterface::tick(const size_t ms_since_last_tick) {
             it->second = _time;
         }
     }
-
- }
+}
