@@ -18,13 +18,13 @@ using namespace std;
 ByteStream::ByteStream(const size_t capacity) : capacity_(capacity) {}
 
 size_t ByteStream::write(const string &data) {
-    size_t size = capacity_ - buffer_size();
-    size = min(data.size(), size);
-    write_count_ += size;
-    for (size_t i = 0; i < size; i++) {
-        buffer_.push_back(data[i]);
+    size_t len = data.length();
+    if (len > capacity_ - buffer_.size()) {
+        len = capacity_ - buffer_.size();
     }
-    return size;
+    write_count_ += len;
+    buffer_.append(BufferList(std::move(string().assign(data.begin(),data.begin()+len))));
+    return len;
 }
 
 //! \param[in] len bytes will be copied from the output side of the buffer
@@ -33,19 +33,21 @@ string ByteStream::peek_output(const size_t len) const {
     if (length > buffer_.size()) {
         length = buffer_.size();
     }
-    return string().assign(buffer_.begin(), buffer_.begin() + length);
+    string s=buffer_.concatenate();
+
+    return string().assign(s.begin(), s.begin() + length);
 }
 
 //! \param[in] len bytes will be removed from the output side of the buffer
 void ByteStream::pop_output(const size_t len) {
-    size_t length = len;
+        size_t length = len;
     if (length > buffer_.size()) {
         length = buffer_.size();
     }
     read_count_ += length;
-    while (length--) {
-        buffer_.pop_front();
-    }
+    buffer_.remove_prefix(length);
+    return;
+
 }
 
 //! Read (i.e., copy and then pop) the next "len" bytes of the stream

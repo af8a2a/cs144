@@ -42,7 +42,8 @@ class AsyncNetworkInterface : public NetworkInterface {
         }
     };
 
-    //! Access queue of Internet datagrams that have been received
+    //! Access queue of Internet datagrams that have
+    // been received
     std::queue<InternetDatagram> &datagrams_out() { return _datagrams_out; }
 };
 

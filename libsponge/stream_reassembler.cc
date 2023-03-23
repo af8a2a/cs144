@@ -40,6 +40,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         for (size_t i = (index > next_index_ ? index : next_index_);
              i < next_index_ + _output.remaining_capacity() && i < index + data.size();
              i++) {
+            //合并,但还没有机会发送
             if (!write_flag_[i - next_index_]) {
                 datas_[i - next_index_] = data[i - index];
                 write_flag_[i - next_index_] = true;
@@ -47,6 +48,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
             }
         }
         // 将已经有序的数据发送到字节流中
+        
         string out_str;
         while (write_flag_.front()) {
             out_str += datas_.front();

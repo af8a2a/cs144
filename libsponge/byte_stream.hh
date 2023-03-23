@@ -1,6 +1,7 @@
 #ifndef SPONGE_LIBSPONGE_BYTE_STREAM_HH
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
+#include "buffer.hh"
 #include <cstddef>
 #include <deque>
 #include <string>
@@ -18,9 +19,10 @@ class ByteStream {
     // all, but if any of your tests are taking longer than a second,
     // that's a sign that you probably want to keep exploring
     // different approaches.
+    BufferList buffer_ = {};
 
     bool _error{false};  //!< Flag indicating that the stream suffered an error.
-    std::deque<char> buffer_{};
+    //std::deque<char> buffer_{};
     size_t capacity_;
     size_t write_count_{0};
     size_t read_count_{0};
@@ -91,7 +93,9 @@ class ByteStream {
    if (remaining_capacity() <= 0)
        return 0;
    // 保存数据并更新信息
-   buffer_.push_back(data);
+   std::string s;
+   s+=data;
+   buffer_.append(BufferList(BufferList(std::move(std::string().assign(s.begin(),s.begin()+1)))));
    write_count_++;
    return 1;
 }

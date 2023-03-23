@@ -100,7 +100,9 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
         if (res == ParseResult::NoError) {
             return ip_datagram;
         } else {
+            
             return {};
+
         }
     } else {
         // 如果入站帧是ARP，将有效载荷解析为ARP消息，如果成功，记住发送方的IP地址和以太网地址之间的映射，持续30秒。（从请求和回复中学习映射。）
